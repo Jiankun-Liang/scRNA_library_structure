@@ -1,9 +1,10 @@
 # scRNA_library_structure
-
+This content refer to https://teichlab.github.io/scg_lib_structs/methods_html/Illumina.html and 
+https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html
 ## 1. Illumina sequencing libraries
 
 ## 1.1. Truseq Single Index Library:
-5'- **AATGATACGGCGACCACCGAGATCTACAC**TCTTTCCCTACACGACGCTCTTCCGATCT-insert-AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNNNATCTCGTATGCCGTCTTCTGCTTG -3'
+5'- AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT-insert-AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNNNATCTCGTATGCCGTCTTCTGCTTG -3'
 3'- TTACTATGCCGCTGGTGGCTCTAGATGTGAGAAAGGGATGTGCTGCGAGAAGGCTAGA-insert-TCTAGCCTTCTCGTGTGCAGACTTGAGGTCAGTGNNNNNNNNTAGAGCATACGGCAGAAGACGAAC -5'
           Illumina P5                   Truseq Read 1                        Truseq Read 2                 i7        Illumina P7
 
@@ -11,3 +12,162 @@
 5'- AATGATACGGCGACCACCGAGATCTACACNNNNNNNNACACTCTTTCCCTACACGACGCTCTTCCGATCT-insert-AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNNNATCTCGTATGCCGTCTTCTGCTTG -3'
 3'- TTACTATGCCGCTGGTGGCTCTAGATGTGNNNNNNNNTGTGAGAAAGGGATGTGCTGCGAGAAGGCTAGA-insert-TCTAGCCTTCTCGTGTGCAGACTTGAGGTCAGTGNNNNNNNNTAGAGCATACGGCAGAAGACGAAC -5'
           Illumina P5               i5            Truseq Read 1                          Truseq Read 2                 i7        Illumina P7
+
+## 1.3. Nextera Dual Index Library:
+5'- AATGATACGGCGACCACCGAGATCTACACNNNNNNNNTCGTCGGCAGCGTCAGATGTGTATAAGAGACAG-insert-CTGTCTCTTATACACATCTCCGAGCCCACGAGACNNNNNNNNATCTCGTATGCCGTCTTCTGCTTG -3'
+3'- TTACTATGCCGCTGGTGGCTCTAGATGTGNNNNNNNNAGCAGCCGTCGCAGTCTACACATATTCTCTGTC-insert-GACAGAGAATATGTGTAGAGGCTCGGGTGCTCTGNNNNNNNNTAGAGCATACGGCAGAAGACGAAC -5'
+           Illumina P5              i5             Nextera Read 1                                Nextera Read 2        i7         Illumina P7
+
+## 1.4. Adapter and primer sequences:
+Beads-oligo-dT:
+
+
+                    V2: |--5'- CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](T)30VN -3'
+
+          V3, V3.1, V4: |--5'- CTACACGACGCTCTTCCGATCT[16-bp cell barcode][12-bp UMI](T)30VN -3'
+
+Template Switching Oligo (TSO): 5'- AAGCAGTGGTATCAACGCAGAGTACATrGrGrG -3'
+
+cDNA Forward primer: 5'- CTACACGACGCTCTTCCGATCT -3'
+
+cDNA Reverse primer:
+
+
+                    V2: 5'- AAGCAGTGGTATCAACGCAGAGTACAT -3'
+
+          V3, V3.1, V4: 5'- AAGCAGTGGTATCAACGCAGAG -3'
+
+Illumina TruSeq Read 1 primer: 5'- ACACTCTTTCCCTACACGACGCTCTTCCGATCT -3'
+
+Illumina TruSeq Read 2 primer: 5'- GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT -3'
+
+Truseq adapter (double stranded DNA with a T overhang):
+
+
+                  V2: 5'-  GATCGGAAGAGCACACGTCTGAACTCCAGTCAC -3'
+                      3'- TCTAGCCTTCTCG -5'
+
+        V3, V3.1, V4: 5'-  GATCGGAAGAGCACACGTCTGAACTCCAGTCA -3'
+                      3'- TCTAGCCTTCTCG -5'
+
+Library PCR primer 1: 5'- AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTC -3'
+
+Library PCR primer 2: 5'- CAAGCAGAAGACGGCATACGAGAT[8-bp sample index]GTGACTGGAGTTCAGACGTGT -3'
+
+Sample index sequencing primer: 5'- GATCGGAAGAGCACACGTCTGAACTCCAGTCAC -3'
+
+Illumina P5 adapter: 5'- AATGATACGGCGACCACCGAGATCTACAC -3'
+
+Illumina P7 adapter: 5'- CAAGCAGAAGACGGCATACGAGAT -3'
+
+
+## 1.5. Step-by-step library generation
+(1) mRNA capture using Beads-oligo-dT in the droplets, and reverse transcription using MMLV:
+
+|--5'- CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](T)30VN-------->
+                                                            (A)30BXXXXXXXXXXXXXXXXXXXXX -5'
+
+(2) The terminal tranferase acitivity of MMLV adds extra Cs:
+
+|--5'- CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](dT)VXXXXXXXXX...XXXXXXXXXCCC -3'
+                                                            (pA)BXXXXXXXXX...XXXXXXXXX    -5'
+
+(3) Adding TSO for second strand synthesis:
+
+|--5'- CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](dT)VXXXXXXXXX...XXXXXXXXXCCC------->
+                                                   <--------(pA)BXXXXXXXXX...XXXXXXXXXGGGTACATGAGACGCAACTATGGTGACGAA    -5'
+
+(4) Adding cDNA Forward and Reverse primers to amplify full length cDNA:
+
+   5'- CTACACGACGCTCTTCCGATCT-------->
+|--5'- CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](dT)VXXXXXXXXX...XXXXXXXXXCCCATGTACTCTGCGTTGATACCACTGCTT -3'
+   3'- GATGTGCTGCGAGAAGGCTAGA[16-bp cell barcode][10-bp UMI](pA)BXXXXXXXXX...XXXXXXXXXGGGTACATGAGACGCAACTATGGTGACGAA -5'
+                                                                                <--------TACATGAGACGCAACTATGGTGACGAA -5'
+
+(5) Use Fragmentase to fragment cDNA and perform A-tailing:
+
+Product 1 (TSO plus 5'-end of cDNA):
+
+
+5'-   AAGCAGTGGTATCAACGCAGAGTACATGGGXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXX*A -3'
+3'- A*TTCGTCACCATAGTTGCGTCTCATGTACCCXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXX   -5'
+
+
+Product 2 (middle of cDNA):
+
+
+5'-   XXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXX*A -3'
+3'- A*XXXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXX   -5'
+
+
+Product 3 (Illumina Read 1 sequence, cell barcode, UMI plus 3' of cDNA):
+
+
+5'-   CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](dT)VXXXXXXXXX...XXXXXXXXX*A -3'
+3'- A*GATGTGCTGCGAGAAGGCTAGA[16-bp cell barcode][10-bp UMI](pA)BXXXXXXXXX...XXXXXXXXX   -5'
+
+
+(6) Add double stranded Illumina Truseq adapter (with a T overhang) for ligation:
+
+Product 1 (I assume the 5' end of TSO is blocked, so the adapter can only be ligated to the cDNA end.
+This product is not amplifiable due to the use of the specific primers for amplification, see the next step):
+
+
+5'-   AAGCAGTGGTATCAACGCAGAGTACATGGGXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -3'
+3'- A*TTCGTCACCATAGTTGCGTCTCATGTACCCXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXTCTAGCCTTCTCG -5'
+
+
+Product 2 (will not amplify efficiently due to semi-suppressive PCR??? not really sure about this):
+
+
+5'-                      GCTCTTCCGATCTXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -3'
+3'- CACTGACCTCAAGTCTGCACACGAGAAGGCTAGAXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXTCTAGCCTTCTCG -5'
+
+
+Product 3 (I assume the 5' end of Illumina Read1 Primer is blocked, so the adapter can only be ligated
+to the cDNA end. This is the only ampliable fragment):
+
+
+5'-   CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](dT)VXXX...XXXAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -3'
+3'- A*GATGTGCTGCGAGAAGGCTAGA[16-bp cell barcode][10-bp UMI](pA)BXXX...XXXTCTAGCCTTCTCG -5'
+
+
+
+(7) Add Library PCR Primers 1 & 2 to amplify library:
+
+5'-  AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTC--------->
+                                   5'-   CTACACGACGCTCTTCCGATCT[16-bp cell barcode][10-bp UMI](dT)VXXX...XXXAGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -3'
+                                   3'- A*GATGTGCTGCGAGAAGGCTAGA[16-bp cell barcode][10-bp UMI](pA)BXXX...XXXTCTAGCCTTCTCG                      -5'
+                                                                                                             <-----------TGTGCAGACTTGAGGTCAGTG[8-bp sample index]TAGAGCATACGGCAGAAGACGAAC -5'
+
+(8) Final library structure:
+V2 library:
+
+5'- AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCTNNNNNNNNNNNNNNNNNNNNNNNNNN(dT)VXXX...XXXAGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNNNATCTCGTATGCCGTCTTCTGCTTG -3'
+3'- TTACTATGCCGCTGGTGGCTCTAGATGTGAGAAAGGGATGTGCTGCGAGAAGGCTAGANNNNNNNNNNNNNNNNNNNNNNNNNN(pA)BXXX...XXXTCTAGCCTTCTCGTGTGCAGACTTGAGGTCAGTGNNNNNNNNTAGAGCATACGGCAGAAGACGAAC -5'
+          Illumina P5                   Truseq Read 1               16 bp       10 bp          cDNA          Truseq Read 2                8 bp        Illumina P7
+                                                                cell barcode     UMI                                                  Sample Index
+
+V3, V3.1 & V4 library:
+
+5'- AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCTNNNNNNNNNNNNNNNNNNNNNNNNNNNN(dT)VXXX...XXXAGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNNNATCTCGTATGCCGTCTTCTGCTTG -3'
+3'- TTACTATGCCGCTGGTGGCTCTAGATGTGAGAAAGGGATGTGCTGCGAGAAGGCTAGANNNNNNNNNNNNNNNNNNNNNNNNNNNN(pA)BXXX...XXXTCTAGCCTTCTCGTGTGCAGACTTGAGGTCAGTGNNNNNNNNTAGAGCATACGGCAGAAGACGAAC -5'
+          Illumina P5                   Truseq Read 1               16 bp         12 bp          cDNA          Truseq Read 2                8 bp        Illumina P7
+                                                                cell barcode       UMI                                                  Sample Index
+
+
+## 1.6. Library sequencing:
+(1) Add Truseq Read 1 primer to sequence the first read (bottom strand as template, sequence 16-bp cell barcode and 10-bp UMI, 26 cycles for V2, 28 cycles for V3, V3.1 & V4):
+
+                         5'- ACACTCTTTCCCTACACGACGCTCTTCCGATCT------------------------->
+3'- TTACTATGCCGCTGGTGGCTCTAGATGTGAGAAAGGGATGTGCTGCGAGAAGGCTAGANNNNNNNNNNNNNNNNNNNNNNNNNN(pA)BXXX...XXXTCTAGCCTTCTCGTGTGCAGACTTGAGGTCAGTGNNNNNNNNTAGAGCATACGGCAGAAGACGAAC -5'
+
+(2) Add Sample Index sequencing primer to sequence the sample index (bottom strand as template):
+
+                                                                                                   5'- GATCGGAAGAGCACACGTCTGAACTCCAGTCAC------->
+3'- TTACTATGCCGCTGGTGGCTCTAGATGTGAGAAAGGGATGTGCTGCGAGAAGGCTAGANNNNNNNNNNNNNNNNNNNNNNNNNN(pA)BXXX...XXXTCTAGCCTTCTCGTGTGCAGACTTGAGGTCAGTGNNNNNNNNTAGAGCATACGGCAGAAGACGAAC -5'
+
+(3) Cluster regeneration, add Truseq Read 2 primer to sequence the second read (top strand as template, sequence cDNA, 98 cycles):
+
+5'- AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCTNNNNNNNNNNNNNNNNNNNNNNNNNN(dT)VXXX...XXXAGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNNNATCTCGTATGCCGTCTTCTGCTTG -3'
+                                                                                                <-----TCTAGCCTTCTCGTGTGCAGACTTGAGGTCAGTG -5'
